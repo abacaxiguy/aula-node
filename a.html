@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>API Consumer</title>
+        <style>
+            html {
+                font-family: "Monocraft";
+                text-align: center;
+                animation: abc 5s infinite;
+                font-size: 60px;
+                color: white;
+                background-color: black;
+                font-weight: bold;
+                animation-direction: alternate-reverse;
+                padding-top: 50px;
+            }
+
+            @keyframes abc {
+                0% {
+                    background-color: #91ffe9;
+                    color: #f87cff;
+                    text-shadow: 7px 7px #ccb360;
+                }
+                20% {
+                    background-color: #ffc191;
+                    color: #acffab;
+                    text-shadow: -7px -7px #7360cc;
+                }
+                60% {
+                    background-color: #b7cc60;
+                    color: #91c1ff;
+                    text-shadow: 7px -7px #ff5c4b;
+                }
+                100% {
+                    background-color: #6776fc;
+                    color: #fb76ff;
+                    text-shadow: -7px 7px #ca9b00;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="api-container">
+            <h1>API bem bacana</h1>
+
+            <div class="all">
+                <h2>Login</h2>
+
+                <div class="display:flex">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" required style="all: unset; width: 30%" />
+                </div>
+                <br />
+                <div class="display:flex">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" name="password" required style="all: unset; width: 30%" />
+                </div>
+                <br />
+                <button onclick="login()" style="all: unset; border: 4px white; padding: 10px">Entrar</button>
+            </div>
+        </div>
+
+        <script>
+            const apiUrl = "http://localhost:3000";
+
+            function login() {
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+
+                // Perform login and retrieve JWT
+                fetch(`${apiUrl}/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password }),
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to log in. Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        const jwt = data.jwt;
+
+                        // Use JWT to make a request to localhost:3000/books
+                        return fetch(`${apiUrl}/books`, {
+                            headers: {
+                                Authorization: `Bearer ${jwt}`,
+                            },
+                        });
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const all = document.querySelector(".all");
+                        all.innerHTML = "<h2>Books</h2>";
+                        all.innerHTML += "<ul>";
+                        
+                        const books = data.books;
+
+                        books.forEach((book) => {
+                            all.innerHTML += `<li>${book.title}</li>`;
+                        });
+                        all.innerHTML += "</ul>";
+
+                        console.log(data);
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                    });
+            }
+        </script>
+    </body>
+</html>
